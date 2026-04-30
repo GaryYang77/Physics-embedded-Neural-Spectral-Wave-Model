@@ -166,15 +166,12 @@ checkpoints/
 !checkpoints/.gitkeep
 
 # Data Files (keep structure but ignore data)
-*.nc
-*.npy
 *.h5
 *.hdf5
 *.mat
 *.npz
 test_data/
 !test_data/.gitkeep
-data/
 !data/.gitkeep
 
 # Weights & Biases
