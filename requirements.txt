@@ -1,0 +1,11 @@
+cfgrib
+dask==2024.8.2
+gin_config==0.5.0
+netCDF4
+numpy==2.3.2
+pandas==2.3.2
+scikit_learn==1.7.1
+scipy==1.16.1
+torch==2.5.1
+tqdm==4.66.5
+xarray==2023.6.0

@@ -1,0 +1,139 @@
+# =============================================================================
+# MODEL ARCHITECTURE CONFIGURATION
+# Uses the UNet parameterization to learn source and sink terms from wind and depth.
+# =============================================================================
+
+# Main model architecture
+NeuralWave.config = %CONFIG
+NeuralWave.encoder = @encoders.BaseEncoder()
+NeuralWave.parameterization = @parameterizations.UNetParameterization()
+NeuralWave.integrator = @integrator.ModelAdvance()
+NeuralWave.decoder = @decoders.BaseDecoder()
+NeuralWave.wavenum_solver = @physics_calculation.WaveNumSolver()
+NeuralWave.group_velocity_calculator = @physics_calculation.GroupVelocityCalculator()
+NeuralWave.boundary_processor = @boundary_process.update_absorb_boundary
+NeuralWave.apply_boundary_func= @boundary_process.apply_boundary_condition
+
+# =============================================================================
+# PHYSICS CALCULATION COMPONENTS
+# =============================================================================
+
+# Wave number solver
+physics_calculation.WaveNumSolver.max_iter = 50
+physics_calculation.WaveNumSolver.tol = 1e-6
+
+# Group velocity calculator
+physics_calculation.GroupVelocityCalculator.method = "standard"
+
+# =============================================================================
+# INTEGRATOR CONFIGURATION
+# =============================================================================
+
+# Model advance integrator
+integrator.ModelAdvance.x_tendency = @tendencies.XTendency()
+integrator.ModelAdvance.y_tendency = @tendencies.YTendency()
+integrator.ModelAdvance.th_tendency = @tendencies.ThetaTendency()
+integrator.ModelAdvance.k_tendency = @tendencies.KTendency()
+integrator.ModelAdvance.stot_advance = @integrator.SimpleStotIntegrator()
+integrator.ModelAdvance.boundary_update_func = @boundary_process.update_absorb_boundary
+integrator.ModelAdvance.apply_boundary_func = @boundary_process.apply_boundary_condition
+
+# Tendency components
+tendencies.XTendency.flux_calculator = @flux_calculation.QuickestFlux()
+tendencies.YTendency.flux_calculator = @flux_calculation.QuickestFlux()
+tendencies.ThetaTendency.flux_calculator = @flux_calculation.QuickestFlux()
+tendencies.ThetaTendency.dsdd_calculator = @physics_calculation.calculate_depth_dispersion_derivative
+tendencies.KTendency.flux_calculator = @flux_calculation.WavenumberFlux()
+tendencies.KTendency.dsdd_calculator = @physics_calculation.calculate_depth_dispersion_derivative
+
+# Simple source term integrator
+integrator.SimpleStotIntegrator.method = "explicit"
+
+# Advanced source term integrator (alternative)
+integrator.StotIntegrator.epsilon = 1.0
+integrator.StotIntegrator.dt_min = 0.05
+integrator.StotIntegrator.xp = 0.15
+integrator.StotIntegrator.xr = 0.10
+integrator.StotIntegrator.xf = 0.05
+integrator.StotIntegrator.alpha = 0.62e-4
+
+# =============================================================================
+# PARAMETERIZATION CONFIGURATION
+# =============================================================================
+
+# Configure UNet architecture
+main_unet/UNet.in_channels = 4
+main_unet/UNet.out_channels = 1
+main_unet/UNet.base_channels = 32
+main_unet/UNet.depth = 4
+
+ablation_features = {
+    'wind': @WindEmbeddings(),              # 1 channel
+    'sdn': @SdnEmbeddings2(),                # 1 channel
+    'wwInter': @WwInterEmbeddings()         # 1 channel
+}
+
+parameterizations.UNetParameterization.spectra_entransform = @transforms.BaseEnTransform()
+parameterizations.UNetParameterization.spectra_detransform = @transforms.BaseDeTransform()
+parameterizations.UNetParameterization.spectra_mapper = @mappers.BaseSpecMapper()
+parameterizations.UNetParameterization.spatial_mapper = @mappers.BaseSpatialMapper()
+parameterizations.UNetParameterization.feature_generators = %ablation_features
+parameterizations.UNetParameterization.unet = @main_unet/UNet()
+
+# =============================================================================
+# ENCODER CONFIGURATION
+# =============================================================================
+
+encoders.BaseEncoder.spectra_entransform = @transforms.BaseEnTransform()
+encoders.BaseEncoder.spectra_detransform = @transforms.BaseDeTransform()
+encoders.BaseEncoder.spectra_mapper = @mappers.BaseSpecMapper()
+encoders.BaseEncoder.spatial_mapper = @mappers.BaseSpatialMapper()
+
+# =============================================================================
+# DECODER CONFIGURATION
+# =============================================================================
+
+decoders.BaseDecoder.spectra_entransform = @transforms.BaseEnTransform()
+decoders.BaseDecoder.spectra_detransform = @transforms.BaseDeTransform()
+decoders.BaseDecoder.spectra_mapper = @mappers.BaseSpecMapper()
+decoders.BaseDecoder.spatial_mapper = @mappers.BaseSpatialMapper()
+
+# =============================================================================
+# METADATA AND CONSTANTS
+# =============================================================================
+
+# Grid configuration
+CONFIG = {
+    'metadata': {
+        # Gravity constant
+        'gravity': 9.806,
+        
+        # Grid parameters
+        'coordinate_type': 'Spherical',  # or 'Cartesian'
+        'r_earth': 6366197.7236758135,  # Earth radius in meters
+        
+        # Time stepping parameters
+        'dt_global': 3600,  # Global time step (seconds)
+        'dt_x': 3600,       # X-direction time step
+        'dt_y': 3600,       # Y-direction time step
+        'dt_th': 0,       # Theta direction time step
+        'dt_k': 0,        # Wavenumber time step
+        'dt_stot': 3600,     # Source term time step
+        'yfirst': True,     # Y-first ordering
+        
+        # Scaling factors
+        'FACHFA': 1.0,      # Spectral scaling factor
+        'FACVX': 1.0,       # X-velocity scaling
+        'FACVY': 1.0,       # Y-velocity scaling
+        'FACTH': 0.0,       # Theta scaling
+        'FACK': 0.0,        # Wavenumber scaling
+        'FDG': 0.0,         # Spherical correction factor
+        
+        # Current handling
+        'FULCR': False,     # Full current refraction
+        
+        # Wavenumber solver parameters
+        'khf': 10.0,        # High-frequency cutoff
+        'm': 5.0,           # Wavenumber scheme parameter
+    }
+}
