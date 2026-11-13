@@ -1,6 +1,30 @@
-# <p align="center">Physics-embedded Neural Spectral Wave Model</p>
+<h1 align="center">Physics-embedded Neural Spectral Wave Model</h1>
 
-<p align="center">Guangyu Gary Yang, Haoyu Jiang, Wenfang Lu, Dong Wang</p>
+<p align="center">
+  Guangyu Gary Yang<sup>1,†</sup> &nbsp;·&nbsp;
+  Haoyu Jiang<sup>2,†</sup> &nbsp;·&nbsp;
+  Wenfang Lu<sup>1,*</sup> &nbsp;·&nbsp;
+  Dong Wang<sup>3</sup>
+</p>
+
+<p align="center">
+  <sup>1</sup> Sun Yat-Sen University, China<br>
+  <sup>2</sup> Shenzhen University, China<br>
+  <sup>3</sup> Xiamen University, China
+</p>
+
+<p align="center">
+  <sup>†</sup> Contributed equally. <sup>*</sup> Correspondence: Wenfang Lu
+  (<a href="mailto:luwf6@sysu.edu.cn">luwf6@sysu.edu.cn</a>)
+</p>
+
+<p align="center">
+  <a href="https://doi.org/DOI">Paper</a> &nbsp;·&nbsp;
+  <a href="https://doi.org/10.5281/zenodo.19920055">Code archive</a> &nbsp;·&nbsp;
+  <a href="#released-checkpoints">Checkpoints</a> &nbsp;·&nbsp;
+  <a href="#quick-start">Quick Start</a> &nbsp;·&nbsp;
+  <a href="https://github.com/GaryYang77/NeuralSWM">JAX implementation <i>(Active!)</i></a>
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB" alt="Python 3.8+">
@@ -14,13 +38,9 @@
 
 ---
 
-Official inference package for the paper **"Physics-embedded Neural Spectral Wave Model"**.
+Official inference package for the paper **"Physics-embedded Neural Spectral Wave Model"**. NSWM couples a differentiable numerical propagation core with a neural source-term parameterization. This public release is focused on practical inference with released checkpoints: give it ERA5 wave and wind forcings together with local spectrum NetCDF inputs, and it will run well-trained checkpoints to produce hourly wave forecasts. Bulk parameters are exported by default, while sample-level spectra and stability diagnostics can be saved when needed.
 
-> NSWM couples a differentiable numerical propagation core with a neural source-term parameterization. This public release is focused on practical inference with released checkpoints: give it ERA5 wave and wind forcings together with local spectrum NetCDF inputs, and it will run well-trained checkpoints to produce hourly wave forecasts. Bulk parameters are exported by default, while sample-level spectra and stability diagnostics can be saved when needed.
-
-## Release Scope
-
-This repository is the stable public release accompanying the current manuscript submission. Active internal development continues separately, so some experimental features, training utilities, or newer refactors may not yet be mirrored here.
+> **Note on this release:** This is the official code release for the paper. We stripped out some training and dev scripts to keep it lightweight. It's focused purely on running inference with the published checkpoints. For the bleeding-edge (and JAX-optimized) version, check out the link at the bottom.
 
 ## What This Release Includes
 
@@ -120,7 +140,7 @@ bash examples/run_examples_demo.sh
 If you need a specific Python interpreter or device, override them inline:
 
 ```bash
-PYTHON_BIN="D:/Anaconda3/envs/Torch/python.exe" \
+PYTHON_BIN="PATH/TO/envs/Torch/python.exe" \
 DEVICE="cuda:0" \
 bash examples/run_examples_demo.sh
 ```
@@ -258,13 +278,25 @@ If `OUTPUT_PARAMS` includes `stokes`, the export will additionally include `stok
 If you use NSWM in your research, please cite:
 
 ```bibtex
-@article{yang2026nswm,
-  title     = {Physics-embedded Neural Spectral Wave Model},
-  author    = {Yang, Guangyu Gary and Jiang, Haoyu and Lu, Wenfang and Wang, Dong},
-  journal   = {(in submission)},
-  year      = {2026}
+@article{yang2026sciadv,
+title = {Physics-embedded Neural Spectral Wave Model},
+author = {Yang and  G.† and  Jiang and  H.† and  Lu and  W. and  & Wang and  D.},
+journal = {Science Advances},
+year = {2026},
+note = {in press},
 }
 ```
+
+### Continued development
+
+[NeuralSWM](https://github.com/GaryYang77/NeuralSWM) is the maintained
+JAX-based continuation of this research framework. It provides computational
+optimizations, training and inference workflows, and a pretrained checkpoint
+supporting year-long global wave simulations.
+
+For the published experiments and their associated checkpoints, use this
+repository or the [archived paper implementation](https://doi.org/10.5281/zenodo.19920055).
+For further development with the JAX implementation, visit NeuralSWM.
 
 ## Contact
 
